@@ -9,7 +9,7 @@ public class teste : MonoBehaviour
     /*
     Essa variavel define o fator de multiplicacao para cada nivel.
     No primeiro nivel, sao 100 pontos de xp, no segundo, serao 200,
-    pois o total eh o nivel atual multiplicado por "nextlevel".
+    pois o total é o nivel atual multiplicado por "nextlevel".
     */
     private int nextlevel = 100;
     
@@ -55,23 +55,35 @@ public class teste : MonoBehaviour
         Remove 15 unidades de currency e, se isso resultar num numero menor que 0, 
         entao currency recebe 0 
     */
-    public void changeData(int slot, string campo, int value = 0, string name = ""){
+    public void changeData(string campo, string value = 0, string name = "", int slot = 0){
         string where = "slot" + slot.ToString();
         string qnt = "qnt" + slot.ToString();
+
         if(campo == "lifes") changeLife(value);
+
         else if(campo == "currency") changeCurrency(value);
+
         else if(campo == "xp"){
-            if(PlayerPrefs.GetInt("xp") + value > nextlevel*PlayerPrefs.GetInt("level")){
+            if(PlayerPrefs.GetInt("xp") + value >= nextlevel*PlayerPrefs.GetInt("level")){
               levelUp();
-              // add a diferenca entre o valor atual e o valor maximo do level
-              PlayerPrefs.SetInt("xp", PlayerPrefs.GetInt("xp") + value - PlayerPrefs.GetInt("level"));
+              // add a diferenca entre o valor (ganho e atual) e o valor maximo do level
+              PlayerPrefs.SetInt("xp", PlayerPrefs.GetInt("xp") + value - nextlevel * PlayerPrefs.GetInt("level"));
             }
-        } else if(campo == "name") editName(name);
+            else PlayerPrefs.SetInt("xp", PlayerPrefs.GetInt("xp") + value);}
+
+        else if(campo == "name") editName(name);
+        else if(campo == "item") {
+            if (value > 0){
+                addItem(slot, int.Parse(name), value);
+            }else{
+                removeItem(slot, value);
+            }
+        }
 
     }
     /*
     AQUI SE ENCONTRAM AS FUNCOES SECUNDARIAS (A FUNCAO PRINCIPAL CHAMA ESSAS FUNCOES). 
-    O OBJETIVO EH QUE ELAS NUNCA PRECISEM SER CHAMADAS DIRETAMENTE, APENAS POR MEIO DA
+    O OBJETIVO É QUE ELAS NUNCA PRECISEM SER CHAMADAS DIRETAMENTE, APENAS POR MEIO DA
     FUNCAO PRINCIPAL
     */
     public bool editName(string new_name){
@@ -108,7 +120,7 @@ public class teste : MonoBehaviour
         PlayerPrefs.Save();
     }
     /*
-    EU SIMPLESMENTE NAO FACO IDEIA DO QUE ESSAS FUNCOES FAZEM. PERGUNTEM A DAVI
+    FUNÇÕES QUE CUIDAM DE ADICIONAR OU REMOVER ITENS
     */
 
     public void addItem(int slot, int item, int value){
@@ -120,23 +132,30 @@ public class teste : MonoBehaviour
         PlayerPrefs.Save();
     }
 
-    public void removeItem(int slot){
+    //FUNÇÃO que remove um item do slot informado.  caso find seja true ele faz uma busca em todo o inventário pelo item_id que deve estar acusado no argumento slot
+    public void removeItem(int slot, int value, bool find = false){
         string where = "slot" + slot.ToString();
         string qnt = "qnt" + slot.ToString();
-
-        PlayerPrefs.SetInt(where, 0);
-        PlayerPrefs.SetInt(qnt, 0);
-        PlayerPrefs.Save();
-    }
-
-    public void removeQnt(int slot, int value){
-        string where = "slot" + slot.ToString();
-        string qnt = "qnt" + slot.ToString();
-
-        if (PlayerPrefs.GetInt(qnt) - value > 0) PlayerPrefs.SetInt(qnt, PlayerPrefs.GetInt(qnt) - value);
-        else {
-            PlayerPrefs.SetInt(where, 0);
-            PlayerPrefs.SetInt(qnt, 0);
+        if (!find){
+            if (value == 0)
+            {
+                PlayerPrefs.SetInt(where, 0);
+                PlayerPrefs.SetInt(qnt, 0);
+            } else {
+                if (PlayerPrefs.GetInt(qnt) - value > 0) PlayerPrefs.SetInt(qnt, PlayerPrefs.GetInt(qnt) - value);
+                else {
+                    PlayerPrefs.SetInt(where, 0);
+                    PlayerPrefs.SetInt(qnt, 0);
+                }
+            }
+        } else {
+            for (int i = 0; i < inventorySlots; i++){
+                if (PlayerPrefs.GetInt("slot" + i.ToString()) == slot){
+                    if (PlayerPrefs.GetInt("qnt" + i.ToString()) - value > 0) PlayerPrefs.GetInt("qnt" + i.ToString()) - value;
+                        else PlayerPrefs.SetInt("qnt" + i.ToString(),0);
+                    break;
+                }
+            }
         }
 
         PlayerPrefs.Save();
