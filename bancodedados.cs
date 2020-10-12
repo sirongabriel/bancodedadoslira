@@ -6,6 +6,7 @@ public class teste : MonoBehaviour
 {
 
     private int inventorySlots = 15;
+    private int nextlevel = 100;
     //primeira funcao. cria o "banco de dados"
     public void create_data(){
         //valores do banco
@@ -38,7 +39,7 @@ public class teste : MonoBehaviour
             if(value > 0) addCurrency(value);
             else removeCurrency(value);
         } else if(campo == "xp"){
-            if(PlayerPrefs.GetInt("xp") + value > PlayerPrefs.GetInt("level")){
+            if(PlayerPrefs.GetInt("xp") + value > nextlevel*PlayerPrefs.GetInt("level")){
               levelUp();
               // add a diferenca entre o valor atual e o valor maximo do level
               PlayerPrefs.SetInt("xp", PlayerPrefs.GetInt("xp") + value - PlayerPrefs.GetInt("level"));
